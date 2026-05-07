@@ -1,21 +1,43 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectAllStudents } from '../features/students/selectors';
-import { deleteStudent, updateStudent } from '../features/students/studentsSlice';
+import { selectAllStudents, selectStudentsStatus, selectStudentsError } from '../features/students/selectors';
+import { deleteStudentAsync, updateStudentAsync, fetchStudents } from '../features/students/studentsThunks';
 import EditModal from './EditModal';
 
 function StudentTable() {
   const students = useSelector(selectAllStudents);
+  const status = useSelector(selectStudentsStatus);
+  const error = useSelector(selectStudentsError);
   const dispatch = useDispatch();
   const [editingStudent, setEditingStudent] = useState(null);
 
-  if (students.length === 0) {
-    return <p className="empty-state">No students yet. Add one above!</p>;
+  function handleSaveEdit(updatedStudent) {
+    dispatch(updateStudentAsync(updatedStudent));
+    setEditingStudent(null);
   }
 
-  function handleSaveEdit(updatedStudent) {
-    dispatch(updateStudent(updatedStudent));
-    setEditingStudent(null);
+  if (status === 'loading') {
+    return (
+      <div className="table-status">
+        <div className="spinner"></div>
+        <p>Loading student data...</p>
+      </div>
+    );
+  }
+
+  if (status === 'failed') {
+    return (
+      <div className="table-status error">
+        <p>Error: {error}</p>
+        <button className="btn-primary" onClick={() => dispatch(fetchStudents())}>
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  if (students.length === 0) {
+    return <p className="empty-state">No students yet. Add one above!</p>;
   }
 
   return (
@@ -48,7 +70,7 @@ function StudentTable() {
                 </button>
                 <button 
                   className="btn-delete" 
-                  onClick={() => dispatch(deleteStudent(student.id))}
+                  onClick={() => dispatch(deleteStudentAsync(student.id))}
                 >
                   Delete
                 </button>

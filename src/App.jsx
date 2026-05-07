@@ -1,9 +1,18 @@
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchStudents } from './features/students/studentsThunks';
 import './App.css';
 import StudentTable from './components/StudentTable';
 import GpaSummary from './components/GpaSummary';
 import AddStudentForm from './components/AddStudentForm';
 
 function App() {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchStudents());
+  }, [dispatch]);
+
   return (
     <div className="app-container">
       <header className="app-header">

@@ -14,3 +14,7 @@ export const selectStudentById = (studentId) => (state) =>
 
 export const selectHighAchievers = (state) =>
   state.students.list.filter((student) => student.gpa >= 3.5);
+
+export const selectStudentsStatus = (state) => state.students.status;
+
+export const selectStudentsError = (state) => state.students.error;
