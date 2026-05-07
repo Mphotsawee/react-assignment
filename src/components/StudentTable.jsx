@@ -36,6 +36,10 @@ function StudentTable() {
     );
   }
 
+  if (status !== 'succeeded') {
+    return null;
+  }
+
   if (students.length === 0) {
     return <p className="empty-state">No students yet. Add one above!</p>;
   }

@@ -1,7 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:3000/students';
+const BASE_URL = 'https://69da9b2226585bd92dd400ca.mockapi.io/api/v1/students';
 
 export const fetchStudents = createAsyncThunk(
   'students/fetchStudents',
