@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addStudent } from '../features/students/studentsSlice';
 
 const EMPTY_FORM = { name: '', studentId: '', major: '', gpa: '' };
 
-function AddStudentForm({ onAddStudent }) {
+function AddStudentForm() {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
+  const dispatch = useDispatch();
 
-  // Single handler for ALL inputs via computed property name
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   }
@@ -14,7 +16,6 @@ function AddStudentForm({ onAddStudent }) {
   function handleSubmit(e) {
     e.preventDefault();
 
-    // Validation
     if (!formData.name.trim() || !formData.studentId.trim()) {
       setError('Name and Student ID are required.');
       return;
@@ -26,15 +27,15 @@ function AddStudentForm({ onAddStudent }) {
       return;
     }
 
-    onAddStudent({
-      id: Date.now(), // Temporary ID — Session 4 uses API-generated IDs
+    dispatch(addStudent({
+      id: Date.now(),
       name: formData.name.trim(),
       studentId: formData.studentId.trim(),
       major: formData.major.trim() || 'Undeclared',
       gpa: gpaNum,
-    });
+    }));
 
-    setFormData(EMPTY_FORM); // Reset form after successful submit
+    setFormData(EMPTY_FORM);
     setError('');
   }
 

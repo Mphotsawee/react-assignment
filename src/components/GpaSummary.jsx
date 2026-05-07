@@ -1,27 +1,26 @@
-function GpaSummary({ students }) {
-  if (students.length === 0) return null;
+import { useSelector } from 'react-redux';
+import { selectStudentCount, selectAverageGpa, selectHighAchievers } from '../features/students/selectors';
 
-  const average = (students.reduce((sum, s) => sum + s.gpa, 0) / students.length).toFixed(2);
-  const highest = Math.max(...students.map(s => s.gpa)).toFixed(2);
-  const lowest = Math.min(...students.map(s => s.gpa)).toFixed(2);
+function GpaSummary() {
+  const count = useSelector(selectStudentCount);
+  const average = useSelector(selectAverageGpa);
+  const highAchievers = useSelector(selectHighAchievers);
+
+  if (count === 0) return null;
 
   return (
     <div className="gpa-summary">
       <div className="stat-card">
-        <span className="stat-label">Students</span>
-        <span className="stat-value">{students.length}</span>
+        <span className="stat-label">Total Students</span>
+        <span className="stat-value">{count}</span>
       </div>
       <div className="stat-card">
         <span className="stat-label">Avg GPA</span>
         <span className="stat-value">{average}</span>
       </div>
       <div className="stat-card highlight">
-        <span className="stat-label">Highest</span>
-        <span className="stat-value">{highest}</span>
-      </div>
-      <div className="stat-card">
-        <span className="stat-label">Lowest</span>
-        <span className="stat-value">{lowest}</span>
+        <span className="stat-label">High Achievers (≥3.5)</span>
+        <span className="stat-value">{highAchievers.length}</span>
       </div>
     </div>
   );
