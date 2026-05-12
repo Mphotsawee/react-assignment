@@ -1,14 +1,12 @@
 import { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { addStudentAsync } from '../features/students/studentsThunks';
+import { useAddStudentMutation } from '../features/students/studentsApi';
 
 const EMPTY_FORM = { name: '', studentId: '', major: '', gpa: '' };
 
 function AddStudentForm() {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const dispatch = useDispatch();
+  const [addStudent, { isLoading: isSubmitting }] = useAddStudentMutation();
 
   function handleChange(e) {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,21 +26,18 @@ function AddStudentForm() {
       return;
     }
 
-    setIsSubmitting(true);
     try {
-      await dispatch(addStudentAsync({
+      await addStudent({
         name: formData.name.trim(),
         studentId: formData.studentId.trim(),
         major: formData.major.trim() || 'Undeclared',
         gpa: gpaNum,
-      })).unwrap();
-      
+      }).unwrap();
+
       setFormData(EMPTY_FORM);
       setError('');
     } catch (err) {
-      setError(err || 'Failed to add student');
-    } finally {
-      setIsSubmitting(false);
+      setError(err?.data?.message || 'Failed to add student');
     }
   }
 

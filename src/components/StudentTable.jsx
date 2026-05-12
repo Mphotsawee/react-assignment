@@ -1,19 +1,15 @@
 import { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { selectAllStudents, selectStudentById } from '../features/students/studentsSlice';
-import { selectStudentsStatus, selectStudentsError } from '../features/students/selectors';
-import { deleteStudentAsync, updateStudentAsync, fetchStudents } from '../features/students/studentsThunks';
+import {
+  useGetStudentsQuery,
+  useDeleteStudentMutation,
+  useUpdateStudentMutation,
+} from '../features/students/studentsApi';
 import EditModal from './EditModal';
 
-function StudentRow({ id, index, onEdit }) {
-  const student = useSelector((state) => selectStudentById(state, id));
-  const dispatch = useDispatch();
-
-  if (!student) return null;
-
+function StudentRow({ student, onEdit, onDelete }) {
   return (
-    <tr className={student.gpa >= 3.5 ? "high-gpa" : ""}>
-      <td>{index + 1}</td>
+    <tr className={student.gpa >= 3.5 ? 'high-gpa' : ''}>
+      <td>{student._index + 1}</td>
       <td>{student.name}</td>
       <td>{student.studentId}</td>
       <td>{student.major}</td>
@@ -22,7 +18,7 @@ function StudentRow({ id, index, onEdit }) {
         <button className="btn-edit" onClick={() => onEdit(student)}>
           Edit
         </button>
-        <button className="btn-delete" onClick={() => dispatch(deleteStudentAsync(student.id))}>
+        <button className="btn-delete" onClick={() => onDelete(student.id)}>
           Delete
         </button>
       </td>
@@ -31,18 +27,17 @@ function StudentRow({ id, index, onEdit }) {
 }
 
 function StudentTable() {
-  const students = useSelector(selectAllStudents);
-  const status = useSelector(selectStudentsStatus);
-  const error = useSelector(selectStudentsError);
-  const dispatch = useDispatch();
+  const { data: students = [], isLoading, isError, error, refetch } = useGetStudentsQuery();
+  const [deleteStudent] = useDeleteStudentMutation();
+  const [updateStudent] = useUpdateStudentMutation();
   const [editingStudent, setEditingStudent] = useState(null);
 
-  function handleSaveEdit(updatedStudent) {
-    dispatch(updateStudentAsync(updatedStudent));
+  async function handleSaveEdit(updatedStudent) {
+    await updateStudent(updatedStudent);
     setEditingStudent(null);
   }
 
-  if (status === 'loading') {
+  if (isLoading) {
     return (
       <div className="table-status">
         <div className="spinner"></div>
@@ -51,19 +46,15 @@ function StudentTable() {
     );
   }
 
-  if (status === 'failed') {
+  if (isError) {
     return (
       <div className="table-status error">
-        <p>Error: {error}</p>
-        <button className="btn-primary" onClick={() => dispatch(fetchStudents())}>
+        <p>Error: {error?.data?.message || error?.error || 'Failed to load students'}</p>
+        <button className="btn-primary" onClick={refetch}>
           Retry
         </button>
       </div>
     );
-  }
-
-  if (status !== 'succeeded') {
-    return null;
   }
 
   if (students.length === 0) {
@@ -87,9 +78,9 @@ function StudentTable() {
           {students.map((student, index) => (
             <StudentRow
               key={student.id}
-              id={student.id}
-              index={index}
+              student={{ ...student, _index: index }}
               onEdit={setEditingStudent}
+              onDelete={deleteStudent}
             />
           ))}
         </tbody>
