@@ -1,5 +1,6 @@
 import { useSelector } from 'react-redux';
-import { selectStudentCount, selectAverageGpa, selectHighAchievers } from '../features/students/selectors';
+import { selectStudentCount } from '../features/students/studentsSlice';
+import { selectAverageGpa, selectHighAchievers } from '../features/students/selectors';
 
 function GpaSummary() {
   const count = useSelector(selectStudentCount);

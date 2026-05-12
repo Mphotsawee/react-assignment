@@ -1,8 +1,34 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectAllStudents, selectStudentsStatus, selectStudentsError } from '../features/students/selectors';
+import { selectAllStudents, selectStudentById } from '../features/students/studentsSlice';
+import { selectStudentsStatus, selectStudentsError } from '../features/students/selectors';
 import { deleteStudentAsync, updateStudentAsync, fetchStudents } from '../features/students/studentsThunks';
 import EditModal from './EditModal';
+
+function StudentRow({ id, index, onEdit }) {
+  const student = useSelector((state) => selectStudentById(state, id));
+  const dispatch = useDispatch();
+
+  if (!student) return null;
+
+  return (
+    <tr className={student.gpa >= 3.5 ? "high-gpa" : ""}>
+      <td>{index + 1}</td>
+      <td>{student.name}</td>
+      <td>{student.studentId}</td>
+      <td>{student.major}</td>
+      <td className="gpa-cell">{student.gpa.toFixed(2)}</td>
+      <td className="actions-cell">
+        <button className="btn-edit" onClick={() => onEdit(student)}>
+          Edit
+        </button>
+        <button className="btn-delete" onClick={() => dispatch(deleteStudentAsync(student.id))}>
+          Delete
+        </button>
+      </td>
+    </tr>
+  );
+}
 
 function StudentTable() {
   const students = useSelector(selectAllStudents);
@@ -59,27 +85,12 @@ function StudentTable() {
         </thead>
         <tbody>
           {students.map((student, index) => (
-            <tr key={student.id} className={student.gpa >= 3.5 ? "high-gpa" : ""}>
-              <td>{index + 1}</td>
-              <td>{student.name}</td>
-              <td>{student.studentId}</td>
-              <td>{student.major}</td>
-              <td className="gpa-cell">{student.gpa.toFixed(2)}</td>
-              <td className="actions-cell">
-                <button 
-                  className="btn-edit" 
-                  onClick={() => setEditingStudent(student)}
-                >
-                  Edit
-                </button>
-                <button 
-                  className="btn-delete" 
-                  onClick={() => dispatch(deleteStudentAsync(student.id))}
-                >
-                  Delete
-                </button>
-              </td>
-            </tr>
+            <StudentRow
+              key={student.id}
+              id={student.id}
+              index={index}
+              onEdit={setEditingStudent}
+            />
           ))}
         </tbody>
       </table>

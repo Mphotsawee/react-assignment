@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createEntityAdapter } from '@reduxjs/toolkit';
 import {
   fetchStudents,
   addStudentAsync,
@@ -6,13 +6,16 @@ import {
   deleteStudentAsync,
 } from './studentsThunks';
 
+const studentsAdapter = createEntityAdapter({
+  sortComparer: (a, b) => a.name.localeCompare(b.name),
+});
+
 const studentsSlice = createSlice({
   name: 'students',
-  initialState: {
-    list: [],
+  initialState: studentsAdapter.getInitialState({
     status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
-  },
+  }),
   reducers: {},
   extraReducers: (builder) => {
     builder
@@ -23,7 +26,7 @@ const studentsSlice = createSlice({
       })
       .addCase(fetchStudents.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.list = action.payload;
+        studentsAdapter.setAll(state, action.payload);
       })
       .addCase(fetchStudents.rejected, (state, action) => {
         state.status = 'failed';
@@ -31,20 +34,23 @@ const studentsSlice = createSlice({
       })
       // Add Student
       .addCase(addStudentAsync.fulfilled, (state, action) => {
-        state.list.push(action.payload);
+        studentsAdapter.addOne(state, action.payload);
       })
       // Update Student
       .addCase(updateStudentAsync.fulfilled, (state, action) => {
-        const index = state.list.findIndex((s) => s.id === action.payload.id);
-        if (index !== -1) {
-          state.list[index] = action.payload;
-        }
+        studentsAdapter.upsertOne(state, action.payload);
       })
       // Delete Student
       .addCase(deleteStudentAsync.fulfilled, (state, action) => {
-        state.list = state.list.filter((s) => s.id !== action.payload);
+        studentsAdapter.removeOne(state, action.payload);
       });
   },
 });
+
+export const {
+  selectAll: selectAllStudents,
+  selectById: selectStudentById,
+  selectTotal: selectStudentCount,
+} = studentsAdapter.getSelectors((state) => state.students);
 
 export default studentsSlice.reducer;
